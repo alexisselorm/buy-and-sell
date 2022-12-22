@@ -1,4 +1,4 @@
-<form (ngSubmit)="onSubmit()">
+<form (ngSubmit)="onButtonClick()">
   <div>
     <label for="name">Name:</label>
     <input type="text" name="name" id="name" [(ngModel)]="name" />
@@ -16,5 +16,5 @@
     <label for="price">Price:</label>
     <input type="text" name="price" id="price" [(ngModel)]="price" />
   </div>
-  <button type="submit">Create Listing</button>
+  <button type="submit">{{ buttonText }}</button>
 </form>

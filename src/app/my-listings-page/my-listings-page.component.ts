@@ -14,7 +14,7 @@ export class MyListingsPageComponent implements OnInit {
     this.listings = fakeMyListings;
   }
 
-  onDeleteClicked(listingId: string): void {
+  onDeleteClicked(listingId?: string): void {
     alert(`Deleting listing with id ${listingId}`);
   }
 }
