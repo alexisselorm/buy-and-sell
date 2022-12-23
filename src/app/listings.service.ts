@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { observable, Observable } from 'rxjs';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Listing } from './types';
 
@@ -62,7 +62,16 @@ export class ListingsService {
   }
 
   deleteListing(id: string): Observable<any> {
-    return this.http.delete(`/api/listings/${id}`);
+    return new Observable<any>((observer) => {
+      this.auth.user.subscribe((user) => {
+        user &&
+          user.getIdToken().then((token) => {
+            this.http
+              .delete(`/api/listings/${id}`, httpOptionsWithAuthToken(token))
+              .subscribe(() => observer.next());
+          });
+      });
+    });
   }
 
   createListing(
