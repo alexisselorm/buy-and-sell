@@ -6,7 +6,7 @@
     <a routerLink="/edit-listing/{{ listing.id }}">
       <button>Edit</button>
     </a>
-    <button (click)="onDeleteClicked(listing.id)">Delete</button>
+    <button (click)="onDeleteClicked(listing.id!)">Delete</button>
   </div>
 </div>
 <a routerLink="/new-listing">
