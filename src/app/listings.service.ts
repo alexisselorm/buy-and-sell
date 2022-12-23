@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Listing } from './types';
 
 const httpOptions = {
@@ -9,11 +10,18 @@ const httpOptions = {
   }),
 };
 
+const httpOptionsWithAuthToken = (token: any) => ({
+  headers: new HttpHeaders({
+    'Content-Type': 'application/json',
+    AuthToken: token,
+  }),
+});
+
 @Injectable({
   providedIn: 'root',
 })
 export class ListingsService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private auth: AngularFireAuth) {}
 
   getListings(): Observable<Listing[]> {
     return this.http.get<Listing[]>('/api/listings');
@@ -32,7 +40,25 @@ export class ListingsService {
   }
 
   getListingsForUser(): Observable<Listing[]> {
-    return this.http.get<Listing[]>('api/users/12345/listings');
+    return new Observable<Listing[]>((observer) => {
+      this.auth.user.subscribe((user) => {
+        user &&
+          user.getIdToken().then((token) => {
+            if (user && token) {
+              this.http
+                .get<Listing[]>(
+                  `api/users/${user.uid}/listings`,
+                  httpOptionsWithAuthToken(token)
+                )
+                .subscribe((listings) => {
+                  observer.next(listings);
+                });
+            } else {
+              observer.next([]);
+            }
+          });
+      });
+    });
   }
 
   deleteListing(id: string): Observable<any> {
@@ -44,11 +70,20 @@ export class ListingsService {
     description: string,
     price: number
   ): Observable<Listing> {
-    return this.http.post<Listing>(
-      `/api/listings`,
-      { name, description, price },
-      httpOptions
-    );
+    return new Observable<Listing>((observer) => {
+      this.auth.user.subscribe((user) => {
+        user &&
+          user.getIdToken().then((token) => {
+            return this.http
+              .post<Listing>(
+                `/api/listings`,
+                { name, description, price },
+                httpOptionsWithAuthToken(token)
+              )
+              .subscribe(() => observer.next());
+          });
+      });
+    });
   }
 
   editListing(
@@ -57,10 +92,19 @@ export class ListingsService {
     description: string,
     price: number
   ): Observable<Listing> {
-    return this.http.post<Listing>(
-      `api/listings/${id}`,
-      { name, description, price },
-      httpOptions
-    );
+    return new Observable<Listing>((observer) => {
+      this.auth.user.subscribe((user) => {
+        user &&
+          user.getIdToken().then((token) => {
+            return this.http
+              .post<Listing>(
+                `api/listings/${id}`,
+                { name, description, price },
+                httpOptionsWithAuthToken(token)
+              )
+              .subscribe(() => observer.next());
+          });
+      });
+    });
   }
 }
